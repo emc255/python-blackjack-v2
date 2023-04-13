@@ -1,4 +1,4 @@
-from card_elements import Card
+from card import Card
 from person import Person
 
 

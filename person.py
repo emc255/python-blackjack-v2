@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
-from card_elements import Card, Rank
+from card import Card
+from commons import Rank
 
 
 class Person(ABC):

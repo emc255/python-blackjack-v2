@@ -22,3 +22,10 @@ class Rank(Enum):
     JACK = 11
     QUEEN = 12
     KING = 13
+
+
+class Direction(Enum):
+    UP = "up"
+    DOWN = "down"
+    LEFT = "left"
+    RIGHT = "right"
