@@ -20,6 +20,20 @@ class Table:
         self.draw_dealer_hand()
         self.draw_player_hand()
 
+    def draw_centered_text(self, text, font_size, text_color, rect_color):
+        font = pg.font.SysFont('Arial', font_size)
+        text_surface = font.render(text, True, text_color)
+        text_rect = text_surface.get_rect()
+        text_rect.center = self.screen.get_rect().center
+        rect_width = text_rect.width + 10
+        rect_height = text_rect.height + 10
+        rect_left = (self.screen.get_width() - rect_width) // 2
+        rect_top = (self.screen.get_height() - rect_height) // 2
+        rect = pg.Rect(rect_left, rect_top, rect_width, rect_height)
+        pg.draw.rect(self.screen, rect_color, rect, 2)
+        self.screen.blit(text_surface, text_rect)
+        pg.display.flip()
+
     def draw_dealer_hand(self):
         starting_x = DEALER_CARD_X_POSITION
         if len(self.dealer.cards) > 0:
@@ -65,10 +79,10 @@ class Table:
                                        (CARD_WIDTH, CARD_HEIGHT))
 
             first_round_end = index >= number_of_players
-            self.deal_animation(direction, image, first_round_end)
+            self.deal_card_animation(direction, image, first_round_end)
             player_turn = not player_turn
 
-    def deal_animation(self, direction: Direction, image, round_end):
+    def deal_card_animation(self, direction: Direction, image, round_end):
         if direction == Direction.UP:
             starting_x = DEALER_CARD_X_POSITION + CARD_SPACING_X_POSITION if round_end else DEALER_CARD_X_POSITION
             starting_y = 150
@@ -76,7 +90,7 @@ class Table:
                 # clearing the path which the card takes
                 clear_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
                 self.screen.fill(BACKGROUND_COLOR, clear_rect)
-                starting_y -= .1
+                starting_y -= 1
                 self.screen.blit(image, (starting_x, starting_y))
                 pg.display.flip()
 
@@ -87,6 +101,6 @@ class Table:
                 # clearing the path which the card takes
                 clear_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
                 self.screen.fill(BACKGROUND_COLOR, clear_rect)
-                starting_y += .1
+                starting_y += 1
                 self.screen.blit(image, (starting_x, starting_y))
                 pg.display.flip()
