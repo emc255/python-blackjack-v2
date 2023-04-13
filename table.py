@@ -17,22 +17,24 @@ class Table:
 
     def draw(self):
         self.draw_deck_card()
+        self.draw_text("Bet", 24, (0, 0, 0), "red", 340, 410)
         self.draw_dealer_hand()
         self.draw_player_hand()
 
-    def draw_centered_text(self, text, font_size, text_color, rect_color):
+    def draw_text(self, text, font_size, text_color, rect_color, x, y):
         font = pg.font.SysFont('Arial', font_size)
         text_surface = font.render(text, True, text_color)
         text_rect = text_surface.get_rect()
-        text_rect.center = self.screen.get_rect().center
-        rect_width = text_rect.width + 10
-        rect_height = text_rect.height + 10
-        rect_left = (self.screen.get_width() - rect_width) // 2
-        rect_top = (self.screen.get_height() - rect_height) // 2
-        rect = pg.Rect(rect_left, rect_top, rect_width, rect_height)
-        pg.draw.rect(self.screen, rect_color, rect, 2)
+        text_rect.center = (x, y)
+        # text_rect.center = (text_rect.centerx, text_rect.centery)
+        # rect_width = text_rect.width + 10
+        # rect_height = text_rect.height + 10
+        # rect_left = x
+        # rect_top = y
+        # rect = pg.Rect(x - 20, rect_top, rect_width, rect_height)
+        border_rect = text_rect.inflate(10, 10)
+        # pg.draw.rect(self.screen, rect_color, border_rect, 2)
         self.screen.blit(text_surface, text_rect)
-        pg.display.flip()
 
     def draw_dealer_hand(self):
         starting_x = DEALER_CARD_X_POSITION
