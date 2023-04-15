@@ -4,10 +4,10 @@ import pygame as pg
 
 from dealer import Dealer
 from deck import Deck
-from game import GameV2
+from game import Game
 from player import Player
 from settings import *
-from table import TableV2
+from table import Table
 
 
 class MainWindow:
@@ -18,7 +18,7 @@ class MainWindow:
         self.dealer = Dealer()
         self.player = None
         self.game = None
-        self.table = TableV2(self.screen)
+        self.table = Table(self.screen)
         self.player_name = ""
         self.player_balance = ""
 
@@ -51,7 +51,7 @@ class MainWindow:
     def new_game(self):
         self.deck.shuffle()
         self.player = Player(self.player_name, float(self.player_balance))
-        self.game = GameV2(self.deck, self.dealer, self.player)
+        self.game = Game(self.deck, self.dealer, self.player)
         self.is_start_screen_active = False
         self.is_table_screen_active = True
         self.screen.fill(BACKGROUND_COLOR)

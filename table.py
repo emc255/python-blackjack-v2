@@ -8,7 +8,7 @@ from player import Player
 from settings import *
 
 
-class TableV2:
+class Table:
     def __init__(self, screen):
         self.screen = screen
         self.deck_back_image = "resources/images/cards/back.png"

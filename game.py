@@ -3,7 +3,7 @@ from deck import Deck
 from player import Player
 
 
-class GameV2:
+class Game:
     def __init__(self, deck: Deck, dealer: Dealer, player: Player):
         self.deck = deck
         self.dealer = dealer
