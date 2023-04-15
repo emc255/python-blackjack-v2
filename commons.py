@@ -25,7 +25,5 @@ class Rank(Enum):
 
 
 class Direction(Enum):
-    UP = "up"
-    DOWN = "down"
-    LEFT = "left"
-    RIGHT = "right"
+    DEALER = "dealer"
+    PLAYER_ONE = "player one"
