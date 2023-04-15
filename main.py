@@ -63,11 +63,13 @@ class MainWindow:
         pg.display.flip()
         if self.is_betting_round:
             self.game.reset_hands()
-            self.table.update(self.deck, self.is_betting_round)
+            self.table.update(self.deck, self.is_betting_round, self.is_betting_round_complete)
             self.game.deal_card()
             self.is_betting_round = False
         if self.is_hit_round:
-            print("wait")
+            self.table.update(self.deck, self.is_betting_round, self.is_hit_round)
+            self.player.add_card(self.deck.remove_card())
+            self.is_hit_round = False
 
     def draw(self):
         self.screen.fill(BACKGROUND_COLOR)

@@ -15,9 +15,11 @@ class Table:
         self.table_image = pg.transform.scale(pg.image.load("resources/images/misc/table.jpg").convert(),
                                               (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    def update(self, deck: Deck, is_test):
-        if is_test:
+    def update(self, deck: Deck, is_betting, is_hit_round):
+        if is_betting:
             self.draw_deal_card_animation(deck.cards, 2)
+        elif is_hit_round:
+            self.draw_player_hit_card(deck.cards)
 
     def draw(self, deck: Deck, dealer: Dealer, player: Player):
         self.draw_table()
@@ -87,9 +89,9 @@ class Table:
 
             # Define the starting and ending points for the card
             start_pos = Vector2(starting_x, starting_y)
-            xx = PLAYER_ONE_X_POSITION  if round_end else PLAYER_ONE_X_POSITION
-            yy = PLAYER_ONE_Y_POSITION - CARD_SPACING_Y_POSITION if round_end else PLAYER_ONE_Y_POSITION
-            end_pos = Vector2(xx, yy)
+            ending_x = PLAYER_ONE_X_POSITION
+            ending_y = PLAYER_ONE_Y_POSITION - CARD_SPACING_Y_POSITION if round_end else PLAYER_ONE_Y_POSITION
+            end_pos = Vector2(ending_x, ending_y)
 
             # Calculate the direction and distance between the starting and ending points
             direction = (end_pos - start_pos).normalize()
@@ -98,7 +100,7 @@ class Table:
             # Set the speed of the card movement
             speed = .5
 
-            while starting_x < xx and starting_y < yy:
+            while starting_x < ending_x and starting_y < ending_y:
                 # Create a subsurface of the background image using the defined rect
                 background_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
                 background_surface = self.table_image.subsurface(background_rect)
@@ -122,3 +124,35 @@ class Table:
                 starting_x += .1
                 self.screen.blit(image, (starting_x, DEALER_CARD_Y_POSITION))
                 pg.display.flip()
+
+    def draw_player_hit_card(self, cards):
+        starting_x = 350
+        starting_y = 124
+
+        image = pg.transform.scale(pg.image.load(cards[0].front_image_path).convert(),
+                                   (CARD_WIDTH, CARD_HEIGHT))
+
+        # Define the starting and ending points for the card
+        start_pos = Vector2(starting_x, starting_y)
+        ending_x = PLAYER_ONE_X_POSITION
+        ending_y = PLAYER_ONE_Y_POSITION - CARD_SPACING_Y_POSITION
+        end_pos = Vector2(ending_x, ending_y)
+
+        # Calculate the direction and distance between the starting and ending points
+        direction = (end_pos - start_pos).normalize()
+        card_pos = start_pos
+
+        # Set the speed of the card movement
+        speed = .5
+
+        while starting_x < ending_x and starting_y < ending_y:
+            # Create a subsurface of the background image using the defined rect
+            background_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
+            background_surface = self.table_image.subsurface(background_rect)
+            self.screen.blit(background_surface, (starting_x, starting_y))
+
+            # Diagonal card movement
+            card_pos += direction * speed
+            starting_x, starting_y = card_pos
+            self.screen.blit(image, (starting_x, starting_y))
+            pg.display.flip()
