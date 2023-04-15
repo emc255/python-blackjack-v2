@@ -20,12 +20,15 @@ class Game:
         self.player = Player("jessica", 1200)
         self.table = Table(self.screen, self.deck, self.dealer, self.player)
 
-        self.start_event = pg.USEREVENT + 0
         self.start_event_rect = pg.Rect(210, 285, 80, 30)
-        self.bet_event_rect = pg.Rect(320, 395, 60, 30)
         self.deal_card = False
-        self.start_screen = True
-        self.table_screen = False
+        self.start_screen_active = True
+        self.table_screen_active = False
+        self.player_action_event_rect = {
+            "bet": pg.Rect(320, 395, 60, 30),
+            "hit": pg.Rect(320, 395, 60, 30),
+            "stand": pg.Rect(320, 395, 60, 30),
+        }
 
     def new_game(self):
         pass
@@ -39,10 +42,10 @@ class Game:
     def draw(self):
         self.screen.fill(BACKGROUND_COLOR)
 
-        if self.start_screen:
+        if self.start_screen_active:
             self.draw_start_screen()
 
-        if self.table_screen:
+        if self.table_screen_active:
             self.table.draw()
 
     def check_events(self):
@@ -52,21 +55,28 @@ class Game:
                 sys.exit()
 
             elif event.type == pg.MOUSEBUTTONDOWN:
-                if self.start_event_rect.collidepoint(event.pos) and self.start_screen:
+
+                if self.start_event_rect.collidepoint(event.pos) and self.start_screen_active:
                     # trigger the custom event
                     self.deck.shuffle()
-                    self.start_screen = False
-                    self.table_screen = True
+                    self.start_screen_active = False
+                    self.table_screen_active = True
                     self.screen.fill(BACKGROUND_COLOR)
                     print("IM FROM START")
-                elif self.bet_event_rect.collidepoint(event.pos) and self.table_screen:
+                elif self.player_action_event_rect["bet"].collidepoint(event.pos) and self.table_screen_active:
                     # trigger the custom event
                     self.deal_card = True
                     self.player.reset_hand()
                     self.dealer.reset_hand()
                     print("IM FROM TABLE SCREEN")
 
-                # get the mouse position
+            if self.start_event_rect.collidepoint(pg.mouse.get_pos()) and self.start_screen_active:
+                pg.mouse.set_cursor(pg.cursors.Cursor(pg.SYSTEM_CURSOR_HAND))
+            elif any(rect.collidepoint(pg.mouse.get_pos()) for rect in
+                     self.player_action_event_rect.values()) and self.table_screen_active:
+                pg.mouse.set_cursor(pg.cursors.Cursor(pg.SYSTEM_CURSOR_HAND))
+            else:
+                pg.mouse.set_cursor(pg.cursors.Cursor(pg.SYSTEM_CURSOR_ARROW))
                 pos = pg.mouse.get_pos()
                 print("Mouse clicked at", pos)
                 # if self.start_screen:

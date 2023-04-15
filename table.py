@@ -17,7 +17,8 @@ class Table:
 
     def draw(self):
         self.draw_deck_card()
-        self.draw_text("Bet", 24, (0, 0, 0), "red", 340, 410)
+        self.draw_text("Bet", FONT_MEDIUM, BLACK, "red", 320, 410)
+        self.draw_text("Hit", FONT_MEDIUM, BLACK, "red", 320, 450)
         self.draw_dealer_hand()
         self.draw_player_hand()
 
@@ -92,7 +93,7 @@ class Table:
                 # clearing the path which the card takes
                 clear_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
                 self.screen.fill(BACKGROUND_COLOR, clear_rect)
-                starting_y -= 1
+                starting_y -= .1
                 self.screen.blit(image, (starting_x, starting_y))
                 pg.display.flip()
 
@@ -103,6 +104,6 @@ class Table:
                 # clearing the path which the card takes
                 clear_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
                 self.screen.fill(BACKGROUND_COLOR, clear_rect)
-                starting_y += 1
+                starting_y += .1
                 self.screen.blit(image, (starting_x, starting_y))
                 pg.display.flip()
