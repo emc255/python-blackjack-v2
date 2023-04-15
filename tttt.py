@@ -46,7 +46,7 @@ while True:
 
     # Update the position of the card surface based on the direction and speed
     card_pos += direction * speed
-
+    print(card_pos)
     # If the card has reached the ending point, reset its position to the starting point
     if (card_pos - start_pos).length() >= distance:
         card_pos = start_pos

@@ -92,28 +92,22 @@ class TableV2:
             starting_y = 124
 
             # Define the starting and ending points for the card
-            start_pos = Vector2(350, 124)
+            start_pos = Vector2(starting_x, starting_y)
             end_pos = Vector2(480, 356)
 
             # Calculate the direction and distance between the starting and ending points
             direction = (end_pos - start_pos).normalize()
-            distance = (end_pos - start_pos).length()
-            # Set the initial position of the card surface to the starting point
             card_pos = start_pos
 
             # Set the speed of the card movement
-            speed = 1
-            background_rect = pg.Rect(starting_x, DEALER_CARD_Y_POSITION, CARD_WIDTH, CARD_HEIGHT)
-            # Create a subsurface of the background image using the defined rect
-            background_surface = self.table_image.subsurface(background_rect)
-            while starting_y < PLAYER_ONE_Y_POSITION:
-                # clearing the path which the card takes
-                clear_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
+            speed = .5
 
-                self.screen.fill(BACKGROUND_COLOR, clear_rect)
-                card_surface = pg.Surface((CARD_WIDTH, CARD_HEIGHT), flags=pg.SRCALPHA)
+            while starting_x < PLAYER_ONE_X_POSITION and starting_y < PLAYER_ONE_Y_POSITION:
+                background_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
+                background_surface = self.table_image.subsurface(background_rect)
+                self.screen.blit(background_surface, (starting_x, starting_y))
                 card_pos += direction * speed
-                starting_y += .1
+                starting_x, starting_y = card_pos
                 self.screen.blit(image, (starting_x, starting_y))
                 pg.display.flip()
 
