@@ -53,8 +53,6 @@ class Game:
                 self.player.add_card(self.deck.remove_card())
                 self.dealer.add_card(self.deck.remove_card())
 
-            print(f"dealer has {self.dealer.reveal_one_card()}")
-
     def player_turn(self):
         decision = True
         while decision and len(self.player.cards) < 5:

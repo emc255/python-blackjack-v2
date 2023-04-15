@@ -25,13 +25,15 @@ class MainWindow:
         self.is_start_screen_active = True
         self.is_table_screen_active = False
         self.deal_card = False
-
+        self.is_betting_round_complete = False
+        self.hit_card = False
+        self.is_hit_round_complete = False
         # Rect
         self.start_event_rect = pg.Rect(100, 200, 80, 30)
         self.player_action_event_rect = {
-            "bet": pg.Rect(482, 496, 60, 30),
-            "hit": pg.Rect(320, 395, 60, 30),
-            "stand": pg.Rect(320, 395, 60, 30),
+            "bet": pg.Rect(482, 496, 30, 30),
+            "hit": pg.Rect(482, 518, 28, 30),
+            "stand": pg.Rect(520, 518, 60, 30),
         }
 
         self.player_name_input_box_rect = pg.Rect(225, 100, 140, 30)
@@ -64,6 +66,8 @@ class MainWindow:
             self.table.update(self.deck, self.deal_card)
             self.game.deal_card()
             self.deal_card = False
+        if self.hit_card:
+            print("wait")
 
     def draw(self):
         self.screen.fill(BACKGROUND_COLOR)
@@ -85,11 +89,25 @@ class MainWindow:
                 self.start_screen_collision_check(event)
                 if self.start_game(event):
                     self.new_game()
-                elif self.player_action_event_rect["bet"].collidepoint(event.pos) and self.is_table_screen_active:
-                    # trigger the custom event
-                    self.deal_card = True
-                print(event.pos)
+                elif self.is_table_screen_active:
+                    if self.player_action_event_rect["bet"].collidepoint(event.pos) \
+                            and not self.is_betting_round_complete:
+                        self.deal_card = True
+                        self.is_betting_round_complete = True
+                    elif self.player_action_event_rect["hit"].collidepoint(event.pos) \
+                            and not self.is_hit_round_complete:
+                        self.hit_card = True
+                        self.is_hit_round_complete = True
+                    print(event.pos)
 
+            if self.player_action_event_rect["bet"].collidepoint(pg.mouse.get_pos()) \
+                    and not self.is_betting_round_complete:
+                pg.mouse.set_cursor(pg.cursors.Cursor(pg.SYSTEM_CURSOR_HAND))
+            elif self.player_action_event_rect["hit"].collidepoint(pg.mouse.get_pos()) \
+                    and not self.is_hit_round_complete:
+                pg.mouse.set_cursor(pg.cursors.Cursor(pg.SYSTEM_CURSOR_HAND))
+            else:
+                pg.mouse.set_cursor(pg.cursors.Cursor(pg.SYSTEM_CURSOR_ARROW))
     def run(self):
         while True:
             self.check_events()
@@ -150,6 +168,16 @@ class MainWindow:
     def start_game(self, event):
         return self.start_event_rect.collidepoint(event.pos) and self.is_start_screen_active \
             and len(self.player_name) > 0 and len(self.player_balance) > 0
+
+    def remove_player_action_event_rect(self, action_key):
+        del self.player_action_event_rect[action_key]
+
+    def restore_player_action_event_rect(self):
+        self.player_action_event_rect = {
+            "bet": pg.Rect(482, 496, 30, 30),
+            "hit": pg.Rect(482, 518, 60, 30),
+            "stand": pg.Rect(520, 518, 60, 30),
+        }
 
 
 if __name__ == '__main__':

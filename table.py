@@ -25,6 +25,9 @@ class Table:
         self.draw_text(player.name, FONT_MEDIUM, RED, 482, 452)
         self.draw_text(f"${player.balance:.2f}", FONT_MEDIUM, LIGHT_GREEN, 482, 474)
         self.draw_text("Bet", FONT_MEDIUM, BLACK, 482, 496)
+        self.draw_text("Hit", FONT_MEDIUM, BLACK, 482, 518)
+        self.draw_text("/", FONT_MEDIUM, BLACK, 510, 518)
+        self.draw_text("Stand", FONT_MEDIUM, BLACK, 520, 518)
         self.draw_dealer_hand(dealer)
         self.draw_player_hand(player)
 
@@ -48,12 +51,14 @@ class Table:
 
     def draw_player_hand(self, player: Player):
         starting_x = PLAYER_ONE_X_POSITION
+        starting_y = PLAYER_ONE_Y_POSITION
         if len(player.cards) > 0:
             for index, card in enumerate(player.cards):
                 image = pg.transform.scale(pg.image.load(card.front_image_path).convert(),
                                            (CARD_WIDTH, CARD_HEIGHT))
-                self.screen.blit(image, (starting_x, PLAYER_ONE_Y_POSITION))
+                self.screen.blit(image, (starting_x, starting_y))
                 starting_x += CARD_SPACING_X_POSITION
+                starting_y -= CARD_SPACING_Y_POSITION
 
     def draw_text(self, text, font_size, text_color, x, y):
         font = pg.font.SysFont('Arial', font_size)
@@ -82,7 +87,9 @@ class Table:
 
             # Define the starting and ending points for the card
             start_pos = Vector2(starting_x, starting_y)
-            end_pos = Vector2(480, 356)
+            xx = PLAYER_ONE_X_POSITION  if round_end else PLAYER_ONE_X_POSITION
+            yy = PLAYER_ONE_Y_POSITION - CARD_SPACING_Y_POSITION if round_end else PLAYER_ONE_Y_POSITION
+            end_pos = Vector2(xx, yy)
 
             # Calculate the direction and distance between the starting and ending points
             direction = (end_pos - start_pos).normalize()
@@ -91,7 +98,7 @@ class Table:
             # Set the speed of the card movement
             speed = .5
 
-            while starting_x < PLAYER_ONE_X_POSITION and starting_y < PLAYER_ONE_Y_POSITION:
+            while starting_x < xx and starting_y < yy:
                 # Create a subsurface of the background image using the defined rect
                 background_rect = pg.Rect(starting_x, starting_y, CARD_WIDTH, CARD_HEIGHT)
                 background_surface = self.table_image.subsurface(background_rect)
