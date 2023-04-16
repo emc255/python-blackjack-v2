@@ -1,7 +1,9 @@
 import sys
 
 import pygame as pg
+from pygame.event import Event
 
+from commons import GameState
 from dealer import Dealer
 from deck import Deck
 from game import Game
@@ -10,7 +12,7 @@ from settings import *
 from table import Table
 
 
-class MainWindow:
+class BlackJack:
     def __init__(self):
         pg.init()
         self.screen = pg.display.set_mode(RESOLUTION)
@@ -22,12 +24,9 @@ class MainWindow:
         self.player_name = ""
         self.player_balance = ""
 
-        self.is_main_menu_active = True
-        self.is_table_screen_active = False
-        self.is_betting_round = False
-        self.is_betting_round_complete = False
-        self.is_hit_round = False
-        self.is_hit_round_complete = False
+        self.state = GameState.MAIN_MENU
+        self.click_success = False
+
         # Rect
         self.main_menu_event_rect = pg.Rect(100, 200, 80, 30)
         self.player_action_event_rect = {
@@ -54,53 +53,44 @@ class MainWindow:
         self.deck.shuffle()
         self.player = Player(self.player_name, float(self.player_balance))
         self.game = Game(self.deck, self.dealer, self.player)
-        self.is_main_menu_active = False
-        self.is_table_screen_active = True
         self.screen.fill(BACKGROUND_COLOR)
-        print(self.player)
 
     def update(self):
         pg.display.flip()
-        if self.is_betting_round:
-            self.game.reset_hands()
-            self.table.update(self.deck, self.is_betting_round, self.is_betting_round_complete)
+        if self.state == GameState.DEAL and self.click_success:
+            self.table.deal_card_animation(self.deck.cards, 2)
             self.game.deal_card()
-            self.is_betting_round = False
-        if self.is_hit_round:
-            self.table.update(self.deck, self.is_betting_round, self.is_hit_round)
-            self.player.add_card(self.deck.remove_card())
-            self.is_hit_round = False
+            self.state = GameState.PLAYER_TURN
+            self.click_success = False
+        elif self.state == GameState.PLAYER_TURN and self.click_success:
+            self.table.player_hit_card_animation(self.deck.cards)
+            busted = self.game.player_hit_card()
+            if busted:
+                self.state = GameState.DEAL
+            self.click_success = False
+        elif self.state == GameState.DEALER_TURN:
+            pass
 
     def draw(self):
-        self.screen.fill(BACKGROUND_COLOR)
-        if self.is_main_menu_active:
+        if self.state == GameState.MAIN_MENU:
+            self.screen.fill(BACKGROUND_COLOR)
             self.draw_start_screen()
-
-        if self.is_table_screen_active:
-            self.table.draw(self.deck, self.dealer, self.player)
+        else:
+            self.table.draw(self.deck, self.dealer, self.player, False)
 
     def check_events(self):
         for event in pg.event.get():
+            mouse_position = pg.mouse.get_pos()
+
             if (event.type == pg.QUIT) or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                 pg.quit()
                 sys.exit()
+
             elif event.type == pg.KEYDOWN:
-                self.get_player_info(event)
+                self.handle_keyboard_input(event)
 
             elif event.type == pg.MOUSEBUTTONDOWN:
-                self.main_menu_screen_collision_check(event)
-                if self.start_game(event):
-                    self.new_game()
-                elif self.is_table_screen_active:
-                    if self.player_action_event_rect["bet"].collidepoint(
-                            event.pos) and not self.is_betting_round_complete:
-                        self.is_betting_round = True
-                        self.is_betting_round_complete = True
-                    elif self.player_action_event_rect["hit"].collidepoint(
-                            event.pos) and self.is_betting_round_complete:
-                        self.is_hit_round = True
-                        self.is_hit_round_complete = True
-                    print(event.pos)
+                self.handle_mouse_input(mouse_position)
 
             self.set_cursor_pointer()
 
@@ -109,6 +99,26 @@ class MainWindow:
             self.check_events()
             self.update()
             self.draw()
+
+    def handle_keyboard_input(self, event):
+        if self.state == GameState.MAIN_MENU:
+            self.get_player_info(event)
+
+    def handle_mouse_input(self, mouse_position):
+        if self.state == GameState.MAIN_MENU:
+            self.main_menu_screen_collision_check(mouse_position)
+            if self.main_menu_event_rect.collidepoint(mouse_position) and len(self.player_name) > 0 and len(
+                    self.player_balance) > 0:
+                self.new_game()
+                self.state = GameState.DEAL
+        elif self.state == GameState.DEAL:
+            if self.player_action_event_rect["bet"].collidepoint(mouse_position):
+                self.click_success = True
+
+        elif self.state == GameState.PLAYER_TURN:
+            self.click_success = True
+        elif self.state == GameState.DEALER_TURN:
+            pass
 
     def draw_start_screen(self):
         self.draw_text("Player Name: ", FONT_MEDIUM, BLACK, 100, 100)
@@ -133,7 +143,7 @@ class MainWindow:
         text_surface = font.render(text, True, text_color)
         self.screen.blit(text_surface, (x + 5, y + 5))
 
-    def get_player_info(self, event):
+    def get_player_info(self, event: Event):
         if self.is_player_name_input_box_active and event.key == pg.K_RETURN or \
                 event.key == pg.K_TAB:
             self.player_name = "" if len(self.player_name) == 0 else self.player_name.replace(" ", "")
@@ -146,39 +156,38 @@ class MainWindow:
         elif self.is_player_balance_input_box_active and event.unicode.isdigit() and len(self.player_balance) < 4:
             self.player_balance += event.unicode
 
-    def main_menu_screen_collision_check(self, event):
+    def main_menu_screen_collision_check(self, mouse_position):
         # player name input
-        self.is_player_name_input_box_active = self.player_name_input_box_rect.collidepoint(event.pos)
+        self.is_player_name_input_box_active = self.player_name_input_box_rect.collidepoint(mouse_position)
         self.player_name_input_box_color = self.color_active \
             if self.is_player_name_input_box_active else self.color_inactive
         self.player_name_input_box_text_color = self.color_inactive \
             if self.is_player_name_input_box_active else self.color_active
 
         # player balance input
-        self.is_player_balance_input_box_active = self.player_balance_input_box_rect.collidepoint(event.pos)
+        self.is_player_balance_input_box_active = self.player_balance_input_box_rect.collidepoint(mouse_position)
         self.player_balance_input_box_color = self.color_active \
             if self.is_player_balance_input_box_active else self.color_inactive
         self.player_balance_input_box_text_color = self.color_inactive \
             if self.is_player_balance_input_box_active else self.color_active
 
-    def start_game(self, event):
-        return self.main_menu_event_rect.collidepoint(event.pos) and self.is_main_menu_active \
-            and len(self.player_name) > 0 and len(self.player_balance) > 0
-
     def set_cursor_pointer(self):
         cursor_type = pg.SYSTEM_CURSOR_ARROW
 
-        if self.main_menu_event_rect.collidepoint(pg.mouse.get_pos()) and self.is_main_menu_active:
+        if self.state == GameState.MAIN_MENU and self.main_menu_event_rect.collidepoint(pg.mouse.get_pos()):
             cursor_type = pg.SYSTEM_CURSOR_HAND
-        elif self.player_action_event_rect["bet"].collidepoint(
-                pg.mouse.get_pos()) and not self.is_betting_round_complete:
+        elif self.state == GameState.DEAL and self.player_action_event_rect["bet"].collidepoint(pg.mouse.get_pos()):
             cursor_type = pg.SYSTEM_CURSOR_HAND
-        elif self.player_action_event_rect["hit"].collidepoint(pg.mouse.get_pos()) and self.is_betting_round_complete:
+        elif self.state == GameState.PLAYER_TURN and self.player_action_event_rect["hit"].collidepoint(
+                pg.mouse.get_pos()):
             cursor_type = pg.SYSTEM_CURSOR_HAND
+        elif self.state == "dealer_turn":
+            cursor_type = pg.SYSTEM_CURSOR_HAND
+            pass
 
         pg.mouse.set_cursor(pg.cursors.Cursor(cursor_type))
 
 
 if __name__ == '__main__':
-    main_window = MainWindow()
-    main_window.run()
+    blackjack = BlackJack()
+    blackjack.run()

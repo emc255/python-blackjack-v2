@@ -16,21 +16,6 @@ class Game:
         else:
             self.cards_played.append(cards)
 
-    def start(self):
-        self.deck.shuffle()
-        play = True
-        while play and self.player.balance > 0:
-            again = input("Again y/n: ")
-            if again == "y":
-                self.player_bet()
-                self.deal_card()
-                self.player_turn()
-                self.dealer_turn()
-                self.check_winners()
-                self.reset_hands()
-            elif again == "n":
-                play = False
-
     def player_bet(self):
         print(f"{self.player}")
         betting = True
@@ -52,6 +37,11 @@ class Game:
             for _ in range(players):
                 self.player.add_card(self.deck.remove_card())
                 self.dealer.add_card(self.deck.remove_card())
+
+    def player_hit_card(self):
+        self.player.add_card(self.deck.remove_card())
+        total = self.player.calculate_hand_result()
+        return total > 21
 
     def player_turn(self):
         decision = True

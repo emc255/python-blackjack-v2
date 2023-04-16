@@ -15,13 +15,13 @@ class Table:
         self.table_image = pg.transform.scale(pg.image.load("resources/images/misc/table.jpg").convert(),
                                               (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    def update(self, deck: Deck, is_betting, is_hit_round):
-        if is_betting:
-            self.draw_deal_card_animation(deck.cards, 2)
-        elif is_hit_round:
-            self.draw_player_hit_card(deck.cards)
+    # def update(self, deck: Deck, is_betting, is_hit_round):
+    #     if is_betting:
+    #         self.draw_deal_card_animation(deck.cards, 2)
+    #     elif is_hit_round:
+    #         self.draw_player_hit_card(deck.cards)
 
-    def draw(self, deck: Deck, dealer: Dealer, player: Player):
+    def draw(self, deck: Deck, dealer: Dealer, player: Player, round_ended: bool):
         self.draw_table()
         self.draw_deck_card()
         self.draw_text(player.name, FONT_MEDIUM, RED, 482, 452)
@@ -30,7 +30,7 @@ class Table:
         self.draw_text("Hit", FONT_MEDIUM, BLACK, 482, 518)
         self.draw_text("/", FONT_MEDIUM, BLACK, 510, 518)
         self.draw_text("Stand", FONT_MEDIUM, BLACK, 520, 518)
-        self.draw_dealer_hand(dealer)
+        self.draw_dealer_hand(dealer, round_ended)
         self.draw_player_hand(player)
 
     def draw_table(self):
@@ -41,11 +41,11 @@ class Table:
                                              (CARD_WIDTH, CARD_HEIGHT))
         self.screen.blit(deck_back_image, (290, 34))
 
-    def draw_dealer_hand(self, dealer: Dealer):
+    def draw_dealer_hand(self, dealer: Dealer, round_ended):
         starting_x = DEALER_CARD_X_POSITION
         if len(dealer.cards) > 0:
             for index, card in enumerate(dealer.cards):
-                face_up = card.front_image_path if index == 0 else self.deck_back_image
+                face_up = card.front_image_path if index == 0 or round_ended else self.deck_back_image
                 image = pg.transform.scale(pg.image.load(face_up).convert(),
                                            (CARD_WIDTH, CARD_HEIGHT))
                 self.screen.blit(image, (starting_x, DEALER_CARD_Y_POSITION))
@@ -67,7 +67,7 @@ class Table:
         text_surface = font.render(text, True, text_color)
         self.screen.blit(text_surface, (x + 5, y + 5))
 
-    def draw_deal_card_animation(self, cards, number_of_players: int):
+    def deal_card_animation(self, cards, number_of_players: int):
         number_of_cards_to_deal = 2 * number_of_players
         player_turn = True
 
@@ -79,10 +79,10 @@ class Table:
                                        (CARD_WIDTH, CARD_HEIGHT))
 
             first_round_end = index >= number_of_players
-            self.deal_card_animation(direction, image, first_round_end)
+            self.draw_deal_card_animation(direction, image, first_round_end)
             player_turn = not player_turn
 
-    def deal_card_animation(self, direction: Direction, image, round_end):
+    def draw_deal_card_animation(self, direction: Direction, image, round_end):
         if direction == Direction.PLAYER_ONE:
             starting_x = 350
             starting_y = 124
@@ -98,7 +98,7 @@ class Table:
             card_pos = start_pos
 
             # Set the speed of the card movement
-            speed = .5
+            speed = 5
 
             while starting_x < ending_x and starting_y < ending_y:
                 # Create a subsurface of the background image using the defined rect
@@ -121,11 +121,11 @@ class Table:
 
             while starting_x < DEALER_CARD_X_POSITION:
                 self.screen.blit(background_surface, (starting_x, DEALER_CARD_Y_POSITION))
-                starting_x += .1
+                starting_x += 1
                 self.screen.blit(image, (starting_x, DEALER_CARD_Y_POSITION))
                 pg.display.flip()
 
-    def draw_player_hit_card(self, cards):
+    def player_hit_card_animation(self, cards):
         starting_x = 350
         starting_y = 124
 
@@ -143,7 +143,7 @@ class Table:
         card_pos = start_pos
 
         # Set the speed of the card movement
-        speed = .5
+        speed = 5
 
         while starting_x < ending_x and starting_y < ending_y:
             # Create a subsurface of the background image using the defined rect

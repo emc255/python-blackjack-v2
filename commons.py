@@ -27,3 +27,11 @@ class Rank(Enum):
 class Direction(Enum):
     DEALER = "dealer"
     PLAYER_ONE = "player one"
+
+
+class GameState(Enum):
+    MAIN_MENU = "main menu"
+    DEAL = "deal"
+    PLAYER_TURN = "player turn"
+    DEALER_TURN = "dealer turn"
+    ROUND_END = "round end"
