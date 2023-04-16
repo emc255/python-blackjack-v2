@@ -26,11 +26,14 @@ class BlackJack:
 
         self.state = GameState.MAIN_MENU
         self.click_success = False
-        self.dealer_show_card = False
+        self.player_bet = 0
         # Rect
         self.main_menu_event_rect = pg.Rect(100, 200, 80, 30)
         self.player_action_event_rect = {
             "bet": pg.Rect(482, 496, 30, 30),
+            "5": pg.Rect(520, 496, 30, 30),
+            "10": pg.Rect(548, 496, 30, 30),
+            "100": pg.Rect(590, 496, 30, 30),
             "hit": pg.Rect(482, 518, 28, 30),
             "stand": pg.Rect(520, 518, 60, 30),
         }
@@ -59,16 +62,22 @@ class BlackJack:
         pg.display.flip()
 
         if self.state == GameState.DEAL and self.click_success:
-            self.table.deal_card_animation(self.deck.cards, 2)
-            self.game.deal_card()
-            self.state = GameState.PLAYER_TURN
+            if self.player_bet > 0:
+                self.game.bet(self.player_bet)
+            else:
+                self.table.deal_card_animation(self.deck.cards, 2)
+                self.game.deal_card()
+                self.state = GameState.PLAYER_TURN
+            self.player_bet = 0
             self.click_success = False
+
         elif self.state == GameState.PLAYER_TURN and self.click_success:
             self.table.player_hit_card_animation(self.deck.cards)
             busted = self.game.player_turn()
             if busted:
                 self.state = GameState.ROUND_END
             self.click_success = False
+
         elif self.state == GameState.DEALER_TURN:
             if self.game.check_dealer_beats_player():
                 self.state = GameState.ROUND_END
@@ -78,8 +87,8 @@ class BlackJack:
                 if busted:
                     self.state = GameState.ROUND_END
         elif self.state == GameState.ROUND_END and self.click_success:
+            self.game.check_winner()
             self.game.reset_hands()
-            self.dealer_show_card = False
             self.state = GameState.DEAL
             pass
 
@@ -88,7 +97,8 @@ class BlackJack:
             self.screen.fill(BACKGROUND_COLOR)
             self.draw_start_screen()
         else:
-            self.table.draw(self.dealer, self.player, self.dealer_show_card)
+            dealer_show_card = self.state == GameState.DEALER_TURN or self.state == GameState.ROUND_END
+            self.table.draw(self.dealer, self.player, dealer_show_card)
 
     def check_events(self):
         for event in pg.event.get():
@@ -103,7 +113,7 @@ class BlackJack:
 
             elif event.type == pg.MOUSEBUTTONDOWN:
                 self.handle_mouse_input(mouse_position)
-
+                print(mouse_position)
             self.set_cursor_pointer()
 
     def run(self):
@@ -125,7 +135,16 @@ class BlackJack:
                 self.state = GameState.DEAL
 
         elif self.state == GameState.DEAL:
-            if self.player_action_event_rect["bet"].collidepoint(mouse_position):
+            if self.player_action_event_rect["bet"].collidepoint(mouse_position) and self.player.bet > 0:
+                self.click_success = True
+            elif self.player_action_event_rect["5"].collidepoint(mouse_position):
+                self.player_bet = 5
+                self.click_success = True
+            elif self.player_action_event_rect["10"].collidepoint(mouse_position):
+                self.player_bet = 10
+                self.click_success = True
+            elif self.player_action_event_rect["100"].collidepoint(mouse_position):
+                self.player_bet = 100
                 self.click_success = True
 
         elif self.state == GameState.PLAYER_TURN:
@@ -133,14 +152,19 @@ class BlackJack:
                 self.click_success = True
             elif self.player_action_event_rect["stand"].collidepoint(mouse_position):
                 self.state = GameState.DEALER_TURN
-                self.dealer_show_card = True
-        elif self.state == GameState.DEALER_TURN:
-            pass
 
         elif self.state == GameState.ROUND_END:
-            if self.player_action_event_rect["bet"].collidepoint(mouse_position):
+            if self.player_action_event_rect["bet"].collidepoint(mouse_position) and self.player.bet > 0:
                 self.click_success = True
-            pass
+            elif self.player_action_event_rect["5"].collidepoint(mouse_position):
+                self.player_bet = 5
+                self.click_success = True
+            elif self.player_action_event_rect["10"].collidepoint(mouse_position):
+                self.player_bet = 10
+                self.click_success = True
+            elif self.player_action_event_rect["100"].collidepoint(mouse_position):
+                self.player_bet = 100
+                self.click_success = True
 
     def draw_start_screen(self):
         self.draw_text("Player Name: ", FONT_MEDIUM, BLACK, 100, 100)
@@ -198,19 +222,30 @@ class BlackJack:
 
         if self.state == GameState.MAIN_MENU and self.main_menu_event_rect.collidepoint(pg.mouse.get_pos()):
             cursor_type = pg.SYSTEM_CURSOR_HAND
+
         elif self.state == GameState.DEAL and self.player_action_event_rect["bet"].collidepoint(
-                pg.mouse.get_pos()):
+                pg.mouse.get_pos()) and self.player.bet > 0:
             cursor_type = pg.SYSTEM_CURSOR_HAND
-        elif self.state == GameState.PLAYER_TURN and self.player_action_event_rect["hit"].collidepoint(
-                pg.mouse.get_pos()):
+
+        elif self.state == GameState.DEAL and (
+                self.player_action_event_rect["5"].collidepoint(pg.mouse.get_pos()) or
+                self.player_action_event_rect["10"].collidepoint(pg.mouse.get_pos()) or
+                self.player_action_event_rect["100"].collidepoint(pg.mouse.get_pos())):
             cursor_type = pg.SYSTEM_CURSOR_HAND
-        elif self.state == GameState.PLAYER_TURN and self.player_action_event_rect["stand"].collidepoint(
-                pg.mouse.get_pos()):
+
+        elif self.state == GameState.PLAYER_TURN and (
+                self.player_action_event_rect["hit"].collidepoint(pg.mouse.get_pos()) or
+                self.player_action_event_rect["stand"].collidepoint(pg.mouse.get_pos())):
             cursor_type = pg.SYSTEM_CURSOR_HAND
-        elif self.state == GameState.DEALER_TURN:
-            cursor_type = pg.SYSTEM_CURSOR_HAND
+
         elif self.state == GameState.ROUND_END and self.player_action_event_rect["bet"].collidepoint(
-                pg.mouse.get_pos()):
+                pg.mouse.get_pos()) and self.player.bet > 0:
+            cursor_type = pg.SYSTEM_CURSOR_HAND
+
+        elif self.state == GameState.ROUND_END and (
+                self.player_action_event_rect["5"].collidepoint(pg.mouse.get_pos()) or
+                self.player_action_event_rect["10"].collidepoint(pg.mouse.get_pos()) or
+                self.player_action_event_rect["100"].collidepoint(pg.mouse.get_pos())):
             cursor_type = pg.SYSTEM_CURSOR_HAND
 
         pg.mouse.set_cursor(pg.cursors.Cursor(cursor_type))

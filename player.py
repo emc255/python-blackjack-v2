@@ -23,9 +23,7 @@ class Player(Person):
 
     def add_bet(self, amount: float):
         self.bet += amount
-
-    def subtract_bet(self):
-        self.balance -= self.bet
+        self.balance -= amount
 
     def reset_bet(self):
         self.bet = 0

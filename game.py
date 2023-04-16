@@ -16,20 +16,8 @@ class Game:
         else:
             self.cards_played.append(cards)
 
-    def player_bet(self):
-        print(f"{self.player}")
-        betting = True
-        while betting:
-            try:
-                amount = float(input("How much do you wanna bet:"))
-            except ValueError:
-                print("Sorry")
-            else:
-                if amount > self.player.balance + 1:
-                    print("too much")
-                else:
-                    self.player.add_bet(amount)
-                    betting = False
+    def bet(self, amount):
+        self.player.add_bet(amount)
 
     def deal_card(self):
         players = 2
@@ -50,45 +38,15 @@ class Game:
         dealer_total = self.dealer.calculate_hand_result()
         return dealer_total >= self.player.calculate_hand_result() or dealer_total >= 17
 
-    def player_turn2(self):
-        decision = True
-        while decision and len(self.player.cards) < 5:
-            print(f"Your Hand: {self.player.calculate_hand_result()}")
-            for a in self.player.cards:
-                print(a)
-            result = input("Hit/Stay: ")
-            if result.lower() == "stay" or result.lower() == "s":
-                decision = False
-            if result.lower() == "hit" or result.lower() == "h":
-                self.player.add_card(self.deck.remove_card())
-                if self.player.calculate_hand_result() > 21:
-                    print("Player Busted")
-                    decision = False
-
-    def dealer_turn2(self):
-        hand_to_beat = self.player.calculate_hand_result()
+    def check_winner(self):
         dealer_hand = self.dealer.calculate_hand_result()
-        if hand_to_beat <= 21:
-            while dealer_hand < hand_to_beat and dealer_hand <= 21:
-                print(f"Dealer Hand: {dealer_hand}")
-                self.dealer.add_card(self.deck.remove_card())
-                dealer_hand = self.dealer.calculate_hand_result()
-
-    def check_winners(self):
-        print(f"Dealer Hand: {self.dealer.calculate_hand_result()}")
-        if self.dealer.calculate_hand_result() > 21:
-            print("Everybody wins")
+        player_hand = self.player.calculate_hand_result()
+        if dealer_hand > 21:
+            self.player.add_balance(self.player.bet * 2)
+        if dealer_hand == player_hand:
             self.player.add_balance(self.player.bet)
-        elif self.dealer.calculate_hand_result() > self.player.calculate_hand_result():
-            print("Dealer Wins")
-            self.player.subtract_bet()
-        elif self.player.calculate_hand_result() > 21:
-            self.player.subtract_bet()
-        elif self.player.calculate_hand_result() > self.dealer.calculate_hand_result():
-            self.player.add_balance(self.player.bet)
-            print("Player Wins")
-        else:
-            print("Draw")
+        elif dealer_hand < player_hand < 22:
+            self.player.add_balance(self.player.bet * 2)
 
     def reset_hands(self):
         self.cards_played.extend(self.dealer.cards)
