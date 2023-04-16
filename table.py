@@ -18,7 +18,7 @@ class Table:
         self.draw_dealer_hand(dealer)
         self.draw_player_hand(player)
 
-    def draw(self, dealer: Dealer, player: Player):
+    def draw(self, dealer: Dealer, player: Player, show_card):
         self.draw_table()
         self.draw_deck_card()
         self.draw_text(player.name, FONT_MEDIUM, RED, 482, 452)
@@ -27,7 +27,7 @@ class Table:
         self.draw_text("Hit", FONT_MEDIUM, BLACK, 482, 518)
         self.draw_text("/", FONT_MEDIUM, BLACK, 510, 518)
         self.draw_text("Stand", FONT_MEDIUM, BLACK, 520, 518)
-        self.draw_dealer_hand(dealer)
+        self.draw_dealer_hand(dealer, show_card)
         self.draw_player_hand(player)
 
     def draw_table(self):
@@ -38,11 +38,11 @@ class Table:
                                              (CARD_WIDTH, CARD_HEIGHT))
         self.screen.blit(deck_back_image, (290, 34))
 
-    def draw_dealer_hand(self, dealer: Dealer):
+    def draw_dealer_hand(self, dealer: Dealer, show_card):
         starting_x = DEALER_CARD_X_POSITION
         if len(dealer.cards) > 0:
             for index, card in enumerate(dealer.cards):
-                face_up = card.front_image_path if index == 0 else self.deck_back_image
+                face_up = card.front_image_path if index == 0 or show_card else self.deck_back_image
                 image = pg.transform.scale(pg.image.load(face_up).convert(),
                                            (CARD_WIDTH, CARD_HEIGHT))
                 self.screen.blit(image, (starting_x, DEALER_CARD_Y_POSITION))
@@ -152,4 +152,19 @@ class Table:
             card_pos += direction * speed
             starting_x, starting_y = card_pos
             self.screen.blit(image, (starting_x, starting_y))
+            pg.display.flip()
+
+    def dealer_hit_card_animation(self, cards):
+        starting_x = 353
+        image = pg.transform.scale(pg.image.load(cards[0].front_image_path).convert(),
+                                   (CARD_WIDTH, CARD_HEIGHT))
+
+        # Create a subsurface of the background image using the defined rect
+        background_rect = pg.Rect(starting_x, DEALER_CARD_Y_POSITION, CARD_WIDTH, CARD_HEIGHT)
+        background_surface = self.table_image.subsurface(background_rect)
+
+        while starting_x < DEALER_CARD_X_POSITION:
+            self.screen.blit(background_surface, (starting_x, DEALER_CARD_Y_POSITION))
+            starting_x += 1
+            self.screen.blit(image, (starting_x, DEALER_CARD_Y_POSITION))
             pg.display.flip()

@@ -38,12 +38,19 @@ class Game:
                 self.player.add_card(self.deck.remove_card())
                 self.dealer.add_card(self.deck.remove_card())
 
-    def player_hit_card(self):
-        self.player.add_card(self.deck.remove_card())
-        total = self.player.calculate_hand_result()
-        return total > 21
-
     def player_turn(self):
+        self.player.add_card(self.deck.remove_card())
+        return self.player.calculate_hand_result() > 21
+
+    def dealer_turn(self):
+        self.dealer.add_card(self.deck.remove_card())
+        return self.dealer.calculate_hand_result() > 21
+
+    def check_dealer_beats_player(self):
+        dealer_total = self.dealer.calculate_hand_result()
+        return dealer_total >= self.player.calculate_hand_result() or dealer_total >= 17
+
+    def player_turn2(self):
         decision = True
         while decision and len(self.player.cards) < 5:
             print(f"Your Hand: {self.player.calculate_hand_result()}")
@@ -58,7 +65,7 @@ class Game:
                     print("Player Busted")
                     decision = False
 
-    def dealer_turn(self):
+    def dealer_turn2(self):
         hand_to_beat = self.player.calculate_hand_result()
         dealer_hand = self.dealer.calculate_hand_result()
         if hand_to_beat <= 21:
