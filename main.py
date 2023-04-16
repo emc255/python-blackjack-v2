@@ -57,6 +57,7 @@ class BlackJack:
 
     def update(self):
         pg.display.flip()
+        
         if self.state == GameState.DEAL and self.click_success:
             self.table.deal_card_animation(self.deck.cards, 2)
             self.game.deal_card()
@@ -76,7 +77,7 @@ class BlackJack:
             self.screen.fill(BACKGROUND_COLOR)
             self.draw_start_screen()
         else:
-            self.table.draw(self.deck, self.dealer, self.player, False)
+            self.table.draw(self.dealer, self.player)
 
     def check_events(self):
         for event in pg.event.get():

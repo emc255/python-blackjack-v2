@@ -3,7 +3,6 @@ from pygame import Vector2
 
 from commons import Direction
 from dealer import Dealer
-from deck import Deck
 from player import Player
 from settings import *
 
@@ -15,13 +14,11 @@ class Table:
         self.table_image = pg.transform.scale(pg.image.load("resources/images/misc/table.jpg").convert(),
                                               (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    # def update(self, deck: Deck, is_betting, is_hit_round):
-    #     if is_betting:
-    #         self.draw_deal_card_animation(deck.cards, 2)
-    #     elif is_hit_round:
-    #         self.draw_player_hit_card(deck.cards)
+    def update(self, dealer: Dealer, player: Player):
+        self.draw_dealer_hand(dealer)
+        self.draw_player_hand(player)
 
-    def draw(self, deck: Deck, dealer: Dealer, player: Player, round_ended: bool):
+    def draw(self, dealer: Dealer, player: Player):
         self.draw_table()
         self.draw_deck_card()
         self.draw_text(player.name, FONT_MEDIUM, RED, 482, 452)
@@ -30,7 +27,7 @@ class Table:
         self.draw_text("Hit", FONT_MEDIUM, BLACK, 482, 518)
         self.draw_text("/", FONT_MEDIUM, BLACK, 510, 518)
         self.draw_text("Stand", FONT_MEDIUM, BLACK, 520, 518)
-        self.draw_dealer_hand(dealer, round_ended)
+        self.draw_dealer_hand(dealer)
         self.draw_player_hand(player)
 
     def draw_table(self):
@@ -41,11 +38,11 @@ class Table:
                                              (CARD_WIDTH, CARD_HEIGHT))
         self.screen.blit(deck_back_image, (290, 34))
 
-    def draw_dealer_hand(self, dealer: Dealer, round_ended):
+    def draw_dealer_hand(self, dealer: Dealer):
         starting_x = DEALER_CARD_X_POSITION
         if len(dealer.cards) > 0:
             for index, card in enumerate(dealer.cards):
-                face_up = card.front_image_path if index == 0 or round_ended else self.deck_back_image
+                face_up = card.front_image_path if index == 0 else self.deck_back_image
                 image = pg.transform.scale(pg.image.load(face_up).convert(),
                                            (CARD_WIDTH, CARD_HEIGHT))
                 self.screen.blit(image, (starting_x, DEALER_CARD_Y_POSITION))
