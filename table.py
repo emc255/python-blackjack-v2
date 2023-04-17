@@ -1,7 +1,7 @@
 import pygame as pg
 from pygame import Vector2
 
-from commons import Direction
+from commons import Direction, GameState
 from dealer import Dealer
 from player import Player
 from settings import *
@@ -18,7 +18,7 @@ class Table:
         self.draw_dealer_hand(dealer)
         self.draw_player_hand(player)
 
-    def draw(self, dealer: Dealer, player: Player, show_card):
+    def draw(self, dealer: Dealer, player: Player, state: GameState):
         self.draw_table()
         self.draw_deck_card()
         self.draw_text(player.name, FONT_MEDIUM, RED, 482, 452)
@@ -30,7 +30,7 @@ class Table:
         self.draw_text("Hit", FONT_MEDIUM, BLACK, 482, 518)
         self.draw_text("/", FONT_MEDIUM, BLACK, 510, 518)
         self.draw_text("Stand", FONT_MEDIUM, BLACK, 520, 518)
-        self.draw_dealer_hand(dealer, show_card)
+        self.draw_dealer_hand(dealer, state)
         self.draw_player_hand(player)
 
     def draw_table(self):
@@ -41,7 +41,8 @@ class Table:
                                              (CARD_WIDTH, CARD_HEIGHT))
         self.screen.blit(deck_back_image, (290, 34))
 
-    def draw_dealer_hand(self, dealer: Dealer, show_card):
+    def draw_dealer_hand(self, dealer: Dealer, state):
+        show_card = state == GameState.DEAL or state == GameState.ROUND_END
         starting_x = DEALER_CARD_X_POSITION
         if len(dealer.cards) > 0:
             for index, card in enumerate(dealer.cards):

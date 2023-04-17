@@ -32,21 +32,30 @@ class Game:
 
     def dealer_turn(self):
         self.dealer.add_card(self.deck.remove_card())
-        return self.dealer.calculate_hand_result() > 21
 
     def check_dealer_beats_player(self):
-        dealer_total = self.dealer.calculate_hand_result()
-        return dealer_total >= self.player.calculate_hand_result() or dealer_total >= 17
-
-    def check_winner(self):
         dealer_hand = self.dealer.calculate_hand_result()
         player_hand = self.player.calculate_hand_result()
+
         if dealer_hand > 21:
             self.player.add_balance(self.player.bet * 2)
+            self.player.reset_bet()
+            return True
+
         if dealer_hand == player_hand:
             self.player.add_balance(self.player.bet)
-        elif dealer_hand < player_hand < 22:
+            self.player.reset_bet()
+            return True
+
+        if dealer_hand < player_hand and dealer_hand < 17 and len(self.dealer.cards) < 5:
+            return False
+
+        elif dealer_hand < player_hand:
             self.player.add_balance(self.player.bet * 2)
+            self.player.reset_bet()
+            return True
+        elif dealer_hand > player_hand:
+            return True
 
     def reset_hands(self):
         self.cards_played.extend(self.dealer.cards)

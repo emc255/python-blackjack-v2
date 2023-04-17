@@ -83,22 +83,18 @@ class BlackJack:
                 self.state = GameState.ROUND_END
             else:
                 self.table.dealer_hit_card_animation(self.deck.cards)
-                busted = self.game.dealer_turn()
-                if busted:
-                    self.state = GameState.ROUND_END
+                self.game.dealer_turn()
+                
         elif self.state == GameState.ROUND_END and self.click_success:
-            self.game.check_winner()
             self.game.reset_hands()
             self.state = GameState.DEAL
-            pass
 
     def draw(self):
         if self.state == GameState.MAIN_MENU:
             self.screen.fill(BACKGROUND_COLOR)
             self.draw_start_screen()
         else:
-            dealer_show_card = self.state == GameState.DEALER_TURN or self.state == GameState.ROUND_END
-            self.table.draw(self.dealer, self.player, dealer_show_card)
+            self.table.draw(self.dealer, self.player, self.state)
 
     def check_events(self):
         for event in pg.event.get():
@@ -113,7 +109,7 @@ class BlackJack:
 
             elif event.type == pg.MOUSEBUTTONDOWN:
                 self.handle_mouse_input(mouse_position)
-                print(mouse_position)
+
             self.set_cursor_pointer()
 
     def run(self):
