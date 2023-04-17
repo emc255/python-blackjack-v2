@@ -22,6 +22,7 @@ class Player(Person):
         self.balance += amount
 
     def add_bet(self, amount: float):
+        amount = self.balance if amount > self.balance else amount
         self.bet += amount
         self.balance -= amount
 
